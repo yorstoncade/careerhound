@@ -1,0 +1,5 @@
+# Keep launcher line endings correct no matter which OS checks the repo out.
+*.bat     text eol=crlf
+*.command text eol=lf
+*.sh      text eol=lf
+*.mjs     text eol=lf

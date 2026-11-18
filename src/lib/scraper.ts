@@ -18,6 +18,8 @@ export const liveFetcher: Fetcher = async (url) => {
     } catch (e) {
       const cause = (e as { cause?: { code?: string; message?: string } }).cause;
       lastErr = cause ? new Error(`${(e as Error).message}: ${cause.code ?? cause.message}`) : e;
+      // DNS failures won't fix themselves on retry (offline, or a blocked/misspelled host).
+      if (cause?.code && ["ENOTFOUND", "EAI_AGAIN", "ECONNREFUSED"].includes(cause.code)) break;
       if ((e as { fatal?: boolean }).fatal) break;
       await new Promise((r) => setTimeout(r, 500 * 2 ** attempt));
     }

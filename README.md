@@ -14,23 +14,43 @@ It doesn't scrape HTML. Most companies host their careers page on an applicant t
 
 Each job is normalized: title, department, location, remote, seniority and salary. Salary comes from structured fields where the ATS provides them, otherwise it is parsed from the description.
 
-## Quick start
+## Run it without the terminal
+
+1. **Install Node.js** (one time): download the **LTS** version from [nodejs.org](https://nodejs.org) and install it.
+2. **Download JobScout**: on GitHub, click **Code ▸ Download ZIP**, then unzip it.
+3. **Double-click the launcher** in the unzipped folder:
+   - **Mac:** `start.command`
+   - **Windows:** `start.bat`
+
+A window opens, sets everything up and opens JobScout in your browser at http://localhost:3000. The first launch takes a few minutes while it downloads what it needs and builds the site. Later launches take a few seconds. Each launch fetches the latest jobs.
+
+Keep the window open while you use JobScout. Close it, or press Ctrl+C, to stop.
+
+**The first time only, your computer may block the launcher** because it isn't from an app store:
+- **Mac:** "cannot be opened because it is from an unidentified developer". Right-click `start.command`, choose **Open**, then click **Open** again. If it says the file isn't executable, open Terminal, type `chmod +x ` (with a space), drag the file into the window and press Enter.
+- **Windows:** "Windows protected your PC". Click **More info**, then **Run anyway**.
+
+If the launcher can't reach any job boards (for example, you're offline), it loads sample jobs from made-up companies so you can still try the site. Real jobs replace them the next time it can connect.
+
+## Quick start (terminal)
 
 ```bash
-npm install
-cp .env.example .env
-npx prisma migrate dev        # creates prisma/dev.db and seeds data/companies.json
-npm run scrape                # fetch live jobs (or: npm run scrape -- --demo for offline sample data)
-npm run dev                   # http://localhost:3000
+npm run setup                 # installs dependencies, creates .env and the database, loads companies
+npm run launch                # fetches jobs, builds, starts and opens http://localhost:3000
 ```
+
+For development, use `npm run scrape` (or `npm run scrape -- --demo` for offline sample data), then `npm run dev`.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
+| `npm run setup` | One-time setup; safe to re-run (skips finished steps) |
+| `npm run launch` | Setup + fetch jobs + build if needed + start + open browser. Set `JOBSCOUT_NO_OPEN=1` to skip the browser |
 | `npm run scrape` | Fetch every company's board; upsert jobs; mark jobs that disappeared as closed |
 | `npm run scrape -- stripe ramp` | Only these company slugs |
 | `npm run scrape -- --demo` | Offline: fictional companies with generated data in each ATS's real response format |
+| `npm run scrape -- --demo-if-empty` | Live, but loads the sample data if no jobs could be fetched at all |
 | `npm run alerts` | Email each confirmed, due alert a digest of jobs first seen since its last email |
 | `npm run db:seed` | Re-load `data/companies.json` (or `npm run db:seed -- path/to/list.json`) |
 | `npm test` | Adapter, normalization and search tests (fixtures in `tests/fixtures`) |
