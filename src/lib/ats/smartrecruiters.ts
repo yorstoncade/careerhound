@@ -1,5 +1,5 @@
 import { finalize, toDate } from "../normalize";
-import type { AtsAdapter } from "./types";
+import { jsonAdapter } from "./types";
 
 interface SrJob {
   id: string;
@@ -13,7 +13,7 @@ interface SrJob {
   experienceLevel?: { label?: string };
 }
 
-export const smartrecruiters: AtsAdapter = {
+export const smartrecruiters = jsonAdapter({
   name: "smartrecruiters",
   url: (token) => `https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(token)}/postings?limit=100`,
   parse(raw, token) {
@@ -38,4 +38,4 @@ export const smartrecruiters: AtsAdapter = {
       });
     });
   },
-};
+});

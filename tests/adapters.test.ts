@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { adapters } from "@/lib/ats";
+import { platformAdapters as adapters } from "@/lib/ats";
 
 const fixture = (name: string) =>
   JSON.parse(readFileSync(path.join(__dirname, "fixtures", `${name}.json`), "utf8"));
@@ -102,7 +102,7 @@ describe("smartrecruiters", () => {
 
 describe("all adapters", () => {
   it("return empty arrays for unexpected payloads", () => {
-    for (const a of Object.values(adapters)) {
+    for (const a of [adapters.greenhouse, adapters.lever, adapters.ashby, adapters.workable, adapters.smartrecruiters]) {
       expect(a.parse({}, "x")).toEqual([]);
       expect(a.parse({ jobs: null, content: null }, "x")).toEqual([]);
     }

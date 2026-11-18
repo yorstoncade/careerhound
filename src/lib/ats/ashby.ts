@@ -1,5 +1,5 @@
 import { finalize, htmlToText, toDate } from "../normalize";
-import type { AtsAdapter } from "./types";
+import { jsonAdapter } from "./types";
 
 interface AshbyComp {
   compensationType?: string;
@@ -30,7 +30,7 @@ const EMPLOYMENT: Record<string, string> = {
   FullTime: "Full-time", PartTime: "Part-time", Intern: "Internship", Contract: "Contract", Temporary: "Temporary",
 };
 
-export const ashby: AtsAdapter = {
+export const ashby = jsonAdapter({
   name: "ashby",
   url: (token) =>
     `https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(token)}?includeCompensation=true`,
@@ -57,4 +57,4 @@ export const ashby: AtsAdapter = {
       });
     });
   },
-};
+});

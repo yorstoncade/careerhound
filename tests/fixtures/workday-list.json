@@ -1,0 +1,20 @@
+{
+  "total": 2,
+  "jobPostings": [
+    {
+      "title": "Senior Software Engineer",
+      "externalPath": "/job/Austin-TX/Senior-Software-Engineer_R0012345",
+      "locationsText": "2 Locations",
+      "postedOn": "Posted 3 Days Ago",
+      "bulletFields": ["R0012345"]
+    },
+    {
+      "title": "Payroll Specialist",
+      "externalPath": "/job/Remote/Payroll-Specialist_R0012399",
+      "locationsText": "Remote, USA",
+      "postedOn": "Posted Today",
+      "remoteType": "Fully Remote",
+      "bulletFields": ["R0012399"]
+    }
+  ]
+}

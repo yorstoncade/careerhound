@@ -1,31 +1,8 @@
 import type { Company, PrismaClient } from "@prisma/client";
 import pLimit from "p-limit";
-import { getAdapter, type NormalizedJob } from "./ats";
-
-export type Fetcher = (url: string, company: Company) => Promise<unknown>;
-
-export const liveFetcher: Fetcher = async (url) => {
-  let lastErr: unknown;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const res = await fetch(url, {
-        headers: { Accept: "application/json", "User-Agent": "JobScout/0.1 (job aggregator)" },
-        signal: AbortSignal.timeout(20_000),
-      });
-      if (res.status === 404) throw Object.assign(new Error("board not found (404)"), { fatal: true });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
-    } catch (e) {
-      const cause = (e as { cause?: { code?: string; message?: string } }).cause;
-      lastErr = cause ? new Error(`${(e as Error).message}: ${cause.code ?? cause.message}`) : e;
-      // DNS failures won't fix themselves on retry (offline, or a blocked/misspelled host).
-      if (cause?.code && ["ENOTFOUND", "EAI_AGAIN", "ECONNREFUSED"].includes(cause.code)) break;
-      if ((e as { fatal?: boolean }).fatal) break;
-      await new Promise((r) => setTimeout(r, 500 * 2 ** attempt));
-    }
-  }
-  throw lastErr;
-};
+import { getAdapter, type NormalizedJob, type ScrapeContext } from "./ats";
+import { createRenderer } from "./careers/render";
+import { createHttp } from "./http";
 
 export interface CompanyResult {
   company: string;
@@ -33,6 +10,8 @@ export interface CompanyResult {
   found: number;
   created: number;
   closed: number;
+  method?: string;
+  upgradedTo?: string;
   error?: string;
 }
 
@@ -64,15 +43,28 @@ export async function saveJobs(db: PrismaClient, companyId: string, jobs: Normal
   return { found: seen.size, created, closed: closed.count };
 }
 
-export async function scrapeCompany(db: PrismaClient, company: Company, fetcher: Fetcher): Promise<CompanyResult> {
-  const adapter = getAdapter(company.ats);
+export async function scrapeCompany(db: PrismaClient, company: Company, ctx: ScrapeContext): Promise<CompanyResult> {
   const now = new Date();
   try {
-    const raw = await fetcher(adapter.url(company.token), company);
-    const jobs = adapter.parse(raw, company.token);
-    const r = await saveJobs(db, company.id, jobs, now);
-    await db.company.update({ where: { id: company.id }, data: { lastScrapedAt: now, lastError: null } });
-    return { company: company.name, ok: true, ...r };
+    const outcome = await getAdapter(company.ats).scrape(company, ctx);
+    const r = await saveJobs(db, company.id, outcome.jobs, now);
+    let upgradedTo: string | undefined;
+    const data: Parameters<typeof db.company.update>[0]["data"] = {
+      lastScrapedAt: now,
+      lastError: null,
+      scrapeMethod: outcome.method,
+    };
+    // A careers page that turns out to use a known platform switches to that platform's faster API,
+    // unless another company already tracks that board.
+    if (outcome.upgrade && company.ats === "careers-page") {
+      const taken = await db.company.findUnique({ where: { ats_token: outcome.upgrade } });
+      if (!taken) {
+        Object.assign(data, { ...outcome.upgrade, careersUrl: company.careersUrl ?? company.token });
+        upgradedTo = outcome.upgrade.ats;
+      }
+    }
+    await db.company.update({ where: { id: company.id }, data });
+    return { company: company.name, ok: true, method: outcome.method, upgradedTo, ...r };
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);
     await db.company.update({ where: { id: company.id }, data: { lastError: error.slice(0, 500) } });
@@ -80,20 +72,26 @@ export async function scrapeCompany(db: PrismaClient, company: Company, fetcher:
   }
 }
 
+/** A scrape context with live HTTP and a headless browser that starts only if some page needs it. */
+export function createContext(): ScrapeContext & { close: () => Promise<void> } {
+  const renderer = createRenderer();
+  return { http: createHttp(), render: renderer.render, close: renderer.close };
+}
+
 export async function scrapeAll(
   db: PrismaClient,
-  fetcher: Fetcher,
+  ctx: ScrapeContext,
   opts: { concurrency?: number; only?: string[]; onResult?: (r: CompanyResult) => void } = {},
 ) {
   const companies = await db.company.findMany({
-    where: opts.only?.length ? { slug: { in: opts.only } } : undefined,
+    where: opts.only ? { slug: { in: opts.only } } : undefined,
     orderBy: { name: "asc" },
   });
   const limit = pLimit(opts.concurrency ?? 8);
   return Promise.all(
     companies.map((c) =>
       limit(async () => {
-        const r = await scrapeCompany(db, c, fetcher);
+        const r = await scrapeCompany(db, c, ctx);
         opts.onResult?.(r);
         return r;
       }),

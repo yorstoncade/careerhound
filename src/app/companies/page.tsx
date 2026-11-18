@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { AddCompanyForm } from "@/components/AddCompanyForm";
 import { CompanyAvatar } from "@/components/JobCard";
+import { PLATFORM_LABELS, type AtsName } from "@/lib/ats";
 import { prisma } from "@/lib/db";
 import { timeAgo } from "@/lib/format";
 
@@ -15,6 +17,7 @@ export default async function CompaniesPage() {
   });
   const indexed = companies.filter((c) => c._count.jobs > 0).sort((a, b) => b._count.jobs - a._count.jobs);
   const pending = companies.length - indexed.length;
+  const canAdd = process.env.ALLOW_ADD_COMPANY !== "0";
 
   return (
     <div className="space-y-5">
@@ -25,14 +28,16 @@ export default async function CompaniesPage() {
           {pending > 0 && `, ${pending} more tracked with no open roles or not yet reachable`}.
         </p>
       </div>
+      {canAdd && <AddCompanyForm />}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {indexed.map((c) => (
           <Link key={c.slug} href={`/?company=${c.slug}`} className="card flex items-center gap-3 p-4 hover:border-brand-500/50">
             <CompanyAvatar name={c.name} />
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{c.name}</p>
-              <p className="text-xs text-zinc-500">
-                {c._count.jobs} open {c._count.jobs === 1 ? "role" : "roles"} · updated {timeAgo(c.lastScrapedAt)}
+              <p className="truncate text-xs text-zinc-500">
+                {c._count.jobs} open {c._count.jobs === 1 ? "role" : "roles"} · via{" "}
+                {PLATFORM_LABELS[c.ats as AtsName] ?? c.ats} · updated {timeAgo(c.lastScrapedAt)}
               </p>
             </div>
           </Link>

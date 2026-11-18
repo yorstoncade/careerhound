@@ -2,7 +2,7 @@
 
 JobScout collects job openings straight from company careers pages into one searchable feed. It also sends email alerts when new jobs match a saved search.
 
-It doesn't scrape HTML. Most companies host their careers page on an applicant tracking system (ATS) with a public JSON job-board API, and JobScout reads those APIs directly:
+Most companies host their careers page on an applicant tracking system (ATS) with a public JSON job-board API, and JobScout reads those APIs directly. For any other careers site, it reads the page itself (see [Adding any company by URL](#adding-any-company-by-url)).
 
 | ATS | Endpoint |
 |---|---|
@@ -11,6 +11,7 @@ It doesn't scrape HTML. Most companies host their careers page on an applicant t
 | Ashby | `api.ashbyhq.com/posting-api/job-board/{token}?includeCompensation=true` |
 | Workable | `apply.workable.com/api/v1/widget/accounts/{token}?details=true` |
 | SmartRecruiters | `api.smartrecruiters.com/v1/companies/{token}/postings` |
+| Workday | `{tenant}.wdN.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs` |
 
 Each job is normalized: title, department, location, remote, seniority and salary. Salary comes from structured fields where the ATS provides them, otherwise it is parsed from the description.
 
@@ -51,9 +52,10 @@ For development, use `npm run scrape` (or `npm run scrape -- --demo` for offline
 | `npm run scrape -- stripe ramp` | Only these company slugs |
 | `npm run scrape -- --demo` | Offline: fictional companies with generated data in each ATS's real response format |
 | `npm run scrape -- --demo-if-empty` | Live, but loads the sample data if no jobs could be fetched at all |
+| `npm run add-company -- <url> [--name "Acme"]` | Add a company from any careers page URL (see below) |
 | `npm run alerts` | Email each confirmed, due alert a digest of jobs first seen since its last email |
 | `npm run db:seed` | Re-load `data/companies.json` (or `npm run db:seed -- path/to/list.json`) |
-| `npm test` | Adapter, normalization and search tests (fixtures in `tests/fixtures`) |
+| `npm test` | Adapter, careers-page, normalization and search tests. Fixture sites live in `tests/fixtures/careers`; serve them with `npx tsx tests/fixtures/careers/serve.ts` |
 
 ### Scheduling
 
@@ -65,15 +67,44 @@ Run the scraper and then the alerts on a schedule, e.g. with cron:
 
 Alerts are sent at most once per period (daily/weekly) regardless of how often the job runs.
 
-## Adding companies
+## Adding any company by URL
 
-Add entries to `data/companies.json` and run `npm run db:seed`:
+All you need is the company's careers page link:
+
+```bash
+npm run add-company -- https://acme.com/careers
+```
+
+You can also use the **Add a company** box on the Companies page. Either way, JobScout tries these in order:
+
+1. **Known platform in the URL.** Greenhouse, Lever, Ashby, Workable, SmartRecruiters and Workday links (e.g. `acme.wd5.myworkdayjobs.com/External`) use that platform's API.
+2. **Known platform embedded in the page.** Many careers pages are a thin wrapper around a Greenhouse or Workday board. If the page embeds or links to one, JobScout switches to that platform's API for future runs.
+3. **Structured job data.** Most careers sites publish schema.org `JobPosting` data for Google Jobs. JobScout reads it from the listing page, or follows each job link (up to 150 jobs and 5 listing pages) and reads it there.
+4. **Reading the job pages.** If there's no structured data, it takes the title, location and description from each job page's HTML.
+5. **Loading it in a browser.** If none of that finds any jobs (the page builds its job list with JavaScript), JobScout loads the page in a headless Chromium and tries again. The first time this is needed, it downloads the browser (about 150 MB, one time).
+
+A company is only saved if jobs were found. The Companies page shows how each company is read ("via Workday", "via careers page"). JobScout respects `robots.txt` on careers sites and identifies itself in its User-Agent.
+
+**Tips if a page finds no jobs:** use the page that lists *all* openings (not the "Life at Acme" page), or the company's Greenhouse/Lever/Workday board link if it has one.
+
+### Company list file
+
+`data/companies.json` accepts either form; run `npm run db:seed` after editing:
 
 ```json
+{ "name": "Acme", "url": "https://acme.com/careers" }
 { "name": "Acme", "ats": "greenhouse", "token": "acme" }
 ```
 
-The token is the board slug in the company's careers URL: `boards.greenhouse.io/<token>`, `jobs.lever.co/<token>`, `jobs.ashbyhq.com/<token>`, `apply.workable.com/<token>`, `jobs.smartrecruiters.com/<token>`. The bundled list is a starting point and hasn't been checked against the live APIs. A company whose token is wrong or out of date fails on its own: the error is stored in `Company.lastError` and printed in the scrape summary.
+For platform entries, the token is the board name in the careers URL: `boards.greenhouse.io/<token>`, `jobs.lever.co/<token>`, `jobs.ashbyhq.com/<token>`, `apply.workable.com/<token>`, `jobs.smartrecruiters.com/<token>`; for Workday, `<tenant>.wdN/<site>` from `<tenant>.wdN.myworkdayjobs.com/<site>`. The bundled list is a starting point and hasn't been checked against the live APIs. A company whose entry is wrong fails on its own: the error is stored in `Company.lastError` and printed in the scrape summary.
+
+### Settings
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `ALLOW_ADD_COMPANY` | on | Set to `0` to hide the Add a company form and disable `POST /api/companies`. **Do this if you host JobScout publicly**, since adding a company makes your server fetch the URL. |
+| `CHROMIUM_PATH` | — | Use an existing Chrome/Chromium instead of downloading one |
+| `ALLOW_PRIVATE_URLS` | off | Allow adding URLs on private/local networks (blocked by default; useful for testing) |
 
 ## Email
 
@@ -86,7 +117,9 @@ Without `SMTP_HOST`, emails are written as `.eml` files to `./outbox`, which is 
 ## Layout
 
 ```
-src/lib/ats/        one adapter per ATS (url + pure parse function)
+src/lib/ats/        one adapter per job platform (incl. Workday)
+src/lib/careers/    any careers URL: platform detection, JSON-LD, link following, robots.txt, headless rendering
+src/lib/http        HTTP client: retries, timeouts, size cap, per-host limits, private-address guard
 src/lib/normalize   html→text, remote/seniority detection, salary parsing
 src/lib/search      filter parsing + Prisma query building (shared by UI, API and alerts)
 src/lib/scraper     fetch with retry, upsert, close stale jobs

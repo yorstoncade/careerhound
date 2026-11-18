@@ -7,7 +7,9 @@
  *   npm run scrape -- --demo-if-empty  # live, but load sample data if no jobs could be fetched at all
  */
 import { PrismaClient } from "@prisma/client";
-import { liveFetcher, scrapeAll, type CompanyResult, type Fetcher } from "../src/lib/scraper";
+import type { ScrapeContext } from "../src/lib/ats";
+import type { Http } from "../src/lib/http";
+import { createContext, scrapeAll, type CompanyResult } from "../src/lib/scraper";
 import { DEMO_COMPANIES, demoPayload } from "./demo-data";
 
 const DEMO_TOKEN_PREFIX = "demo-";
@@ -17,7 +19,9 @@ function slugify(s: string) {
 }
 
 function printResult(r: CompanyResult) {
-  if (r.ok) console.log(`  ✓ ${r.company.padEnd(28)} ${String(r.found).padStart(4)} jobs  (+${r.created} new, -${r.closed} closed)`);
+  if (!r.ok) return;
+  const how = r.upgradedTo ? `  [found ${r.upgradedTo} board]` : r.method && r.method !== "platform" ? `  [${r.method}]` : "";
+  console.log(`  ✓ ${r.company.padEnd(28)} ${String(r.found).padStart(4)} jobs  (+${r.created} new, -${r.closed} closed)${how}`);
 }
 
 function printSummary(results: CompanyResult[], started: number) {
@@ -41,9 +45,9 @@ function printSummary(results: CompanyResult[], started: number) {
   );
 }
 
-async function scrape(db: PrismaClient, fetcher: Fetcher, only: string[]) {
+async function scrape(db: PrismaClient, ctx: ScrapeContext, only: string[]) {
   const started = Date.now();
-  const results = await scrapeAll(db, fetcher, { only, onResult: printResult });
+  const results = await scrapeAll(db, ctx, { only, onResult: printResult });
   printSummary(results, started);
   return results;
 }
@@ -57,8 +61,18 @@ async function loadDemo(db: PrismaClient, only: string[] = []) {
       update: {},
     });
   }
-  const fetcher: Fetcher = async (_url, company) => demoPayload(company);
-  return scrape(db, fetcher, only.length ? only : DEMO_COMPANIES.map((c) => slugify(c.name)));
+  // Serve each demo company's generated payload for whatever API URL its adapter requests.
+  const http: Http = {
+    async json(url) {
+      const c = DEMO_COMPANIES.find((d) => url.includes(d.token));
+      if (!c) throw new Error(`no demo data for ${url}`);
+      return demoPayload(c);
+    },
+    async text(url) {
+      throw new Error(`no demo page for ${url}`);
+    },
+  };
+  return scrape(db, { http }, only.length ? only : DEMO_COMPANIES.map((c) => slugify(c.name)));
 }
 
 async function main() {
@@ -74,7 +88,8 @@ async function main() {
       select: { slug: true },
     });
     const slugs = only.length ? only : live.map((c) => c.slug);
-    const results = await scrape(db, liveFetcher, slugs);
+    const ctx = createContext();
+    const results = await scrape(db, ctx, slugs).finally(() => ctx.close());
 
     if (results.some((r) => r.ok && r.found > 0)) {
       // Real jobs arrived: drop any sample data so it doesn't mix with real listings.

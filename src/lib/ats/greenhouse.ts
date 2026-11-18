@@ -1,5 +1,5 @@
 import { finalize, htmlToText, toDate } from "../normalize";
-import type { AtsAdapter } from "./types";
+import { jsonAdapter } from "./types";
 
 interface GhJob {
   id: number;
@@ -13,7 +13,7 @@ interface GhJob {
   metadata?: { name: string; value: unknown }[] | null;
 }
 
-export const greenhouse: AtsAdapter = {
+export const greenhouse = jsonAdapter({
   name: "greenhouse",
   url: (token) => `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(token)}/jobs?content=true`,
   parse(raw) {
@@ -38,4 +38,4 @@ export const greenhouse: AtsAdapter = {
       });
     });
   },
-};
+});

@@ -1,5 +1,5 @@
 import { finalize, htmlToText, toDate } from "../normalize";
-import type { AtsAdapter } from "./types";
+import { jsonAdapter } from "./types";
 
 interface LeverJob {
   id: string;
@@ -16,7 +16,7 @@ interface LeverJob {
   salaryRange?: { min?: number; max?: number; currency?: string; interval?: string };
 }
 
-export const lever: AtsAdapter = {
+export const lever = jsonAdapter({
   name: "lever",
   url: (token) => `https://api.lever.co/v0/postings/${encodeURIComponent(token)}?mode=json`,
   parse(raw) {
@@ -46,4 +46,4 @@ export const lever: AtsAdapter = {
       });
     });
   },
-};
+});

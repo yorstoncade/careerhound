@@ -1,5 +1,5 @@
 import { finalize, htmlToText, toDate } from "../normalize";
-import type { AtsAdapter } from "./types";
+import { jsonAdapter } from "./types";
 
 interface WorkableJob {
   title: string;
@@ -23,7 +23,7 @@ function place(p: { city?: string; region?: string; state?: string; country?: st
   return [p.city, p.region ?? p.state, p.country].filter(Boolean).join(", ");
 }
 
-export const workable: AtsAdapter = {
+export const workable = jsonAdapter({
   name: "workable",
   url: (token) => `https://apply.workable.com/api/v1/widget/accounts/${encodeURIComponent(token)}?details=true`,
   parse(raw, token) {
@@ -46,4 +46,4 @@ export const workable: AtsAdapter = {
       });
     });
   },
-};
+});

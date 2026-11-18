@@ -11,9 +11,11 @@ model Company {
   id            String    @id @default(cuid())
   name          String
   slug          String    @unique
-  ats           String
-  token         String
+  ats           String // greenhouse | lever | ashby | workable | smartrecruiters | workday | careers-page
+  token         String // the platform's board id; for careers-page, the careers URL
   website       String?
+  careersUrl    String? // the URL it was added with, kept after upgrading to a platform
+  scrapeMethod  String? // platform | json-ld | html | rendered
   logoUrl       String?
   lastScrapedAt DateTime?
   lastError     String?

@@ -14,13 +14,16 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "scrape": "tsx scripts/scrape.ts",
+    "add-company": "tsx scripts/add-company.ts",
     "alerts": "tsx scripts/send-alerts.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
+    "cheerio": "1.1.2",
     "next": "15.5.29",
     "nodemailer": "7.0.13",
     "p-limit": "6.2.0",
+    "playwright": "1.63.0",
     "react": "19.1.10",
     "react-dom": "19.1.10"
   },

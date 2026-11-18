@@ -1,0 +1,16 @@
+{
+  "jobPostingInfo": {
+    "id": "abc123",
+    "title": "Senior Software Engineer",
+    "jobDescription": "<p><b>About the role</b></p><p>Build the platform.</p><p>The base pay range is $140,000 - $180,000 per year.</p>",
+    "location": "Austin, TX",
+    "additionalLocations": ["Remote, USA"],
+    "postedOn": "Posted 3 Days Ago",
+    "startDate": "2026-11-01",
+    "timeType": "Full time",
+    "jobReqId": "R0012345",
+    "remoteType": "Flexible / Remote",
+    "externalUrl": "https://acme.wd5.myworkdayjobs.com/External/job/Austin-TX/Senior-Software-Engineer_R0012345"
+  },
+  "hiringOrganization": { "name": "Acme Corp" }
+}
