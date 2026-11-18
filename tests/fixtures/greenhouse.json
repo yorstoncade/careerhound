@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "id": 7012345,
+      "title": "Senior Backend Engineer ",
+      "absolute_url": "https://boards.greenhouse.io/acme/jobs/7012345",
+      "updated_at": "2026-11-10T12:00:00-05:00",
+      "first_published": "2026-11-01T09:30:00-05:00",
+      "location": { "name": "New York, NY" },
+      "content": "&lt;p&gt;Build &amp;amp; scale our APIs.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Go &amp;amp; Postgres&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Salary: $160,000 - $200,000 USD&lt;/p&gt;",
+      "departments": [{ "id": 1, "name": "Engineering" }],
+      "metadata": [{ "id": 9, "name": "Workplace Type", "value": "Hybrid" }]
+    },
+    {
+      "id": 7012346,
+      "title": "Customer Support Specialist",
+      "absolute_url": "https://boards.greenhouse.io/acme/jobs/7012346",
+      "updated_at": "2026-11-12T12:00:00Z",
+      "location": { "name": "United States" },
+      "content": "&lt;p&gt;Help customers. Pay: $25 - $30 per hour.&lt;/p&gt;",
+      "departments": [],
+      "metadata": [{ "id": 9, "name": "Remote Status", "value": "Fully Remote" }]
+    }
+  ],
+  "meta": { "total": 2 }
+}

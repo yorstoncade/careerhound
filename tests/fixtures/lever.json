@@ -1,0 +1,26 @@
+[
+  {
+    "id": "a1b2c3d4-0000-4000-8000-000000000001",
+    "text": "Product Designer",
+    "hostedUrl": "https://jobs.lever.co/acme/a1b2c3d4-0000-4000-8000-000000000001",
+    "applyUrl": "https://jobs.lever.co/acme/a1b2c3d4-0000-4000-8000-000000000001/apply",
+    "createdAt": 1762000000000,
+    "workplaceType": "remote",
+    "categories": { "commitment": "Full-time", "department": "Design", "team": "Product Design", "location": "Remote - US", "allLocations": ["Remote - US", "Toronto"] },
+    "descriptionPlain": "Design delightful products.",
+    "lists": [{ "text": "Requirements", "content": "<li>4+ years of product design</li><li>Figma</li>" }],
+    "additionalPlain": "We offer great benefits.",
+    "salaryRange": { "min": 130000, "max": 165000, "currency": "USD", "interval": "per-year-salary" }
+  },
+  {
+    "id": "a1b2c3d4-0000-4000-8000-000000000002",
+    "text": "Warehouse Associate",
+    "hostedUrl": "https://jobs.lever.co/acme/a1b2c3d4-0000-4000-8000-000000000002",
+    "createdAt": 1762100000000,
+    "workplaceType": "on-site",
+    "categories": { "commitment": "Part-time", "team": "Operations", "location": "Reno, NV" },
+    "descriptionPlain": "Pick and pack orders.",
+    "lists": [],
+    "salaryRange": { "min": 20, "max": 24, "currency": "USD", "interval": "per-hour-wage" }
+  }
+]

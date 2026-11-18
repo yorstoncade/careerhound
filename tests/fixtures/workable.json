@@ -1,0 +1,22 @@
+{
+  "name": "Acme",
+  "description": "",
+  "jobs": [
+    {
+      "title": "Junior Data Analyst",
+      "shortcode": "AB12CD34EF",
+      "employment_type": "Full-time",
+      "telecommuting": false,
+      "department": "Data",
+      "url": "https://apply.workable.com/j/AB12CD34EF",
+      "shortlink": "https://apply.workable.com/j/AB12CD34EF",
+      "published_on": "2026-11-14",
+      "created_at": "2026-11-13",
+      "country": "Germany",
+      "city": "Berlin",
+      "state": "Berlin",
+      "description": "<p>Analyse things. Gehalt: €50,000 - €60,000.</p>",
+      "locations": [{ "country": "Germany", "countryCode": "DE", "city": "Berlin", "region": "Berlin", "hidden": false }]
+    }
+  ]
+}

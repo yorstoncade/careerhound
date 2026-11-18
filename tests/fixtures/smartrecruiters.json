@@ -1,0 +1,19 @@
+{
+  "offset": 0,
+  "limit": 100,
+  "totalFound": 1,
+  "content": [
+    {
+      "id": "744000012345678",
+      "name": "Director of Finance",
+      "uuid": "1a2b3c4d",
+      "releasedDate": "2026-11-09T15:20:00.000Z",
+      "company": { "identifier": "AcmeCorp", "name": "Acme Corp" },
+      "location": { "city": "Austin", "region": "TX", "country": "us", "remote": false },
+      "department": { "id": "1", "label": "Finance" },
+      "function": { "id": "f", "label": "Accounting/Auditing" },
+      "typeOfEmployment": { "label": "Full-time" },
+      "experienceLevel": { "label": "Director" }
+    }
+  ]
+}

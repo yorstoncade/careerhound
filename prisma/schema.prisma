@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  ats           String
+  token         String
+  website       String?
+  logoUrl       String?
+  lastScrapedAt DateTime?
+  lastError     String?
+  jobs          Job[]
+
+  @@unique([ats, token])
+}
+
+model Job {
+  id              String    @id @default(cuid())
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  externalId      String
+  title           String
+  department      String?
+  location        String
+  remote          Boolean   @default(false)
+  employmentType  String?
+  seniority       String?
+  salaryMin       Int?
+  salaryMax       Int?
+  salaryCurrency  String?
+  descriptionText String
+  applyUrl        String
+  postedAt        DateTime?
+  firstSeenAt     DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+  isActive        Boolean   @default(true)
+
+  @@unique([companyId, externalId])
+  @@index([isActive, firstSeenAt])
+  @@index([companyId])
+}
+
+model Alert {
+  id           String    @id @default(cuid())
+  email        String
+  query        String // filters as a URL query string, e.g. "q=engineer&remote=1"
+  frequency    String    @default("daily")
+  confirmed    Boolean   @default(false)
+  confirmToken String    @unique
+  unsubToken   String    @unique
+  lastSentAt   DateTime?
+  createdAt    DateTime  @default(now())
+}

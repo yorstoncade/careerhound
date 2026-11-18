@@ -1,0 +1,47 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "id": "0f6c6a5e-1111-4a4a-9a9a-000000000001",
+      "title": "Staff Machine Learning Engineer",
+      "department": "Research",
+      "team": "Applied ML",
+      "employmentType": "FullTime",
+      "location": "San Francisco",
+      "secondaryLocations": [{ "location": "Seattle" }],
+      "isRemote": false,
+      "workplaceType": "Hybrid",
+      "isListed": true,
+      "descriptionHtml": "<p>Train models.</p>",
+      "descriptionPlain": "Train models.",
+      "publishedAt": "2026-11-15T18:00:00.000+00:00",
+      "jobUrl": "https://jobs.ashbyhq.com/acme/0f6c6a5e-1111-4a4a-9a9a-000000000001",
+      "compensation": {
+        "compensationTierSummary": "$250K – $320K • Offers Equity",
+        "summaryComponents": [
+          { "compensationType": "EquityPercentage", "interval": "NONE", "currencyCode": null, "minValue": 0.01, "maxValue": 0.05 },
+          { "compensationType": "Salary", "interval": "1 YEAR", "currencyCode": "USD", "minValue": 250000, "maxValue": 320000 }
+        ]
+      }
+    },
+    {
+      "id": "0f6c6a5e-1111-4a4a-9a9a-000000000002",
+      "title": "Unlisted Role",
+      "isListed": false,
+      "location": "Remote",
+      "jobUrl": "https://jobs.ashbyhq.com/acme/x"
+    },
+    {
+      "id": "0f6c6a5e-1111-4a4a-9a9a-000000000003",
+      "title": "Account Executive, EMEA",
+      "department": "Sales",
+      "employmentType": "FullTime",
+      "location": "London",
+      "isRemote": true,
+      "isListed": true,
+      "descriptionHtml": "<p>Close deals. OTE £120k–£150k.</p>",
+      "publishedAt": "2026-11-16T10:00:00.000+00:00",
+      "jobUrl": "https://jobs.ashbyhq.com/acme/0f6c6a5e-1111-4a4a-9a9a-000000000003"
+    }
+  ]
+}
